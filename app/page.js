@@ -2,6 +2,9 @@
 import { useState, useRef, useEffect } from "react";
 
 export default function Home() {
+  const [unlocked, setUnlocked] = useState(false);
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -11,15 +14,22 @@ export default function Home() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
+  const handleUnlock = () => {
+    if (password === "lumina2026") {
+      setUnlocked(true);
+      setError(false);
+    } else {
+      setError(true);
+    }
+  };
+
   const sendMessage = async () => {
     const text = input.trim();
     if (!text || loading) return;
-
     const newMessages = [...messages, { role: "user", content: text }];
     setMessages(newMessages);
     setInput("");
     setLoading(true);
-
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
@@ -38,9 +48,55 @@ export default function Home() {
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      sendMessage();
+      unlocked ? sendMessage() : handleUnlock();
     }
   };
+
+  if (!unlocked) {
+    return (
+      <div style={{
+        height: "100vh", display: "flex", flexDirection: "column",
+        alignItems: "center", justifyContent: "center",
+        background: "linear-gradient(160deg, #0a0a0f 0%, #0d0d1a 100%)",
+        fontFamily: "Georgia, serif", padding: 24
+      }}>
+        <div style={{ fontSize: 32, marginBottom: 16 }}>✦</div>
+        <h1 style={{ color: "#c4b5fd", fontSize: 28, letterSpacing: "0.1em", marginBottom: 8, fontVariant: "small-caps" }}>Lumina</h1>
+        <p style={{ color: "rgba(196,181,253,0.4)", fontSize: 14, marginBottom: 32 }}>Enter your access password</p>
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Password"
+          style={{
+            background: "rgba(255,255,255,0.05)",
+            border: error ? "1px solid #f87171" : "1px solid rgba(255,255,255,0.1)",
+            borderRadius: 12, padding: "12px 16px",
+            color: "#e2deff", fontSize: 16, width: "100%",
+            maxWidth: 300, outline: "none", marginBottom: 8,
+            fontFamily: "Georgia, serif", textAlign: "center"
+          }}
+        />
+        {error && <p style={{ color: "#f87171", fontSize: 13, marginBottom: 8 }}>Incorrect password</p>}
+        <button
+          onClick={handleUnlock}
+          style={{
+            marginTop: 8, width: "100%", maxWidth: 300,
+            padding: "12px", borderRadius: 12, border: "none",
+            background: "linear-gradient(135deg, #7c3aed, #5b21b6)",
+            color: "#fff", fontSize: 16, cursor: "pointer",
+            fontFamily: "Georgia, serif"
+          }}
+        >
+          Enter Lumina
+        </button>
+        <p style={{ color: "rgba(196,181,253,0.3)", fontSize: 12, marginTop: 24, textAlign: "center" }}>
+          Purchase access at beacons.ai/gemma1410
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div style={{
@@ -83,8 +139,7 @@ export default function Home() {
                 : "rgba(255,255,255,0.06)",
               border: msg.role === "user" ? "none" : "1px solid rgba(255,255,255,0.08)",
               borderRadius: msg.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
-              padding: "11px 15px",
-              fontSize: 15, lineHeight: 1.65,
+              padding: "11px 15px", fontSize: 15, lineHeight: 1.65,
               color: msg.role === "user" ? "#ede9fe" : "#d4d0f0"
             }}>
               {msg.content}
