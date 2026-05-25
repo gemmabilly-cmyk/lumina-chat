@@ -8,7 +8,7 @@ export async function POST(req) {
       "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
     },
     body: JSON.stringify({
-      model: "llama3-70b-8192",
+      model: "llama-3.3-70b-versatile",
       messages: [
         { role: "system", content: "You are Lumina, a helpful and friendly AI assistant." },
         ...messages
@@ -18,6 +18,7 @@ export async function POST(req) {
   });
 
   const data = await response.json();
+  console.log("Groq response:", JSON.stringify(data));
   const reply = data.choices?.[0]?.message?.content || "Sorry, I couldn't respond.";
   return Response.json({ reply });
 }
